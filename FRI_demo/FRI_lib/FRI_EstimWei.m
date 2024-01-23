@@ -16,17 +16,11 @@ function [FoundDiracsWeights] = FRI_EstimWei(mv,FoundDiracsLocations,NbDiracs,Le
 % Author: Q.Legros (quentin.legros@telecom-paris.fr)
 % Date: 12-may-2021
 
-pas = 1;
-p=0;
-for hh = -pas:pas
-    p=p+1;
-    FoundDiracsLocations = sort(mod(FoundDiracsLocations - (LenF-modF) -1, LenF))-1+pas;
 
-    C = kron(mv',round(FoundDiracsLocations(1:NbDiracs)));
-    C = exp((-1i * 2 * pi * C) ./ LenF);
-    weights(:,p) = sqrt(2*abs(lsqr(C,y)));
-end
-FoundDiracsWeights = mean(weights,2)
+FoundDiracsLocations = sort(mod(FoundDiracsLocations - (LenF-modF) -1, LenF))-1;
 
-% FoundDiracsWeights = sqrt(2*abs(lsqr(C,y)));
+C = kron(mv',round(FoundDiracsLocations(1:NbDiracs))); 
+C = exp((-1i * 2 * pi * C) ./ LenF);
+
+FoundDiracsWeights = sqrt(2*abs(lsqr(C,y)));
 
