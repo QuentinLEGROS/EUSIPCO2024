@@ -30,17 +30,11 @@ npad  = 50;
 
 
 %% Define signal x0
-Amp(:,1) = 1*ones(N,1);%linspace(1,5,N);
-Amp(:,1) = linspace(2,1,N);
-% Amp(:,3) = 1*ones(N,1);%linspace(2,1,N);
+Amp(:,1) = 1*ones(N,1);
+
 
 X(:,1) = Amp(:,1).*(fmconst(N, 0.1));
 tf0(:,1) = 0.1*ones(N,1);
-% X(:,1) = Amp(:,1).*(fmlin(N,0.15,0.4));
-% tf0(:,1) = linspace(0.15,0.4,N);
-% X(:,2) = Amp(:,2).*(fmconst(N, 0.4));
-% tf0(:,2) = 0.4*ones(N,1);
-% X(:,3) = (fmsin(N,0.3,0.45,320,1,0.3,+1));
 
 Ncomp = size(X,2);                          %% number of components
 x0 = sum(X,2);
@@ -50,68 +44,71 @@ X = transpose(X);
 
 %% Method parameters
 M0 = 10;                                    % Frequency truncation - to avoid infinite sum
-[F_mat]=comp_Fc(M,L);
-F = F_mat(:,200); % F = F./max(F);                         % truncate to data size
+Method = 2;
+% tf = zeros(M/2,N); ia = tf;                 % Init
+tf = zeros(N,Ncomp); ia = tf;                 % Init
+k=3;                                        % recursive filter order
 
-
-% m = -(M/4):(M/4)-1;                       % frequency support of the convolution kernel
-% F2 = transpose(Fh(m, M, L ));              % Convolution kernel
-% F2 = F2./sum(F2);
-% 
-% 
-% figure
-% hold on
-% plot(F)
-% plot(F2)
-% hold off
-
-Method = 1;
 
 %% Compute ground truth
 [tfr]  = tfrgab2(x0, M, L);
 Spect0=(abs(tfr(1:round(M/2),:))).^2;
 
 
-
-%% Recursive_STFT
-k=3;                   %% recursive filter order
-mi=1; mf=250;          %% frequency range
-
-Nfbins = mf-mi+1;
-nfreqs = (mi:mf)/M;
-tfr    = zeros(Nfbins, N);
-
-
-
 %% Noise
 SNR = inf;
 x = sigmerge(x0, randn(size(x0)), SNR);
 
+
+
+%% Define analysis window and parameters for the recursif STFT
+[F,a,b] = init_recursif_data(M,L,k);
+F = transpose(F); 
+
+
+xp = [zeros(k-1,1);x];
+tfrp    = zeros(M/2, N+k);   % Initialization
+
+% figure(1)
+for n = k:N+k-1
+    tfrp(:,n+1) = transpose(sum(b.*xp(n-k+1:n),1)) - sum(a.*tfrp(:,n-k+1:n),2);
+
+    Spect(:,n-k+1) = abs(tfrp(:,n+1)).^2;
+    % Spect(:,n-k+1) = abs(tfrp(:,n+1));
+    
+if sum(Spect(:,n-k+1))>=1e-6
+    [tf(n-k+1,:),ia(n-k+1,:)] = estim_FRI_recursif(Spect(:,n-k+1),Ncomp,F,M0,Method);
+else
+    tf(n-k+1,:) = NaN;
+    ia(n-k+1,:) = NaN;
+end
+% hold on
+% imagesc(abs(tfrp).^2)
+% plot(tf(1:n-k+1),'k')
+% hold off
+% pause(0.01)
+end
+
+%% plot Window - spectrogram
+Spect = abs(tfrp(:,k+1:end)).^2;
+
+figure(1)
+hold on
+% plot(Spect(:,100)./sum(Spect(:,100)),'r')
+% plot(circshift(F,-77)./sum(circshift(F,-77)),'k')
+plot(Spect(:,100),'r')
+plot(circshift(F,-77),'k')
+hold off
+
 % 
-% for m = 1:Nfbins,
-%     lambda = (mi+m-1)/M;
-%     pTs    = -1.0/L + 1i*2*pi*lambda;
-%     alpha  = exp(pTs);
-%     [a,b]  = Gk2(k, L, alpha);
-%     tfr(m,:) = filter(b,a,x);
-% 
-%     % imagesc(abs(tfr(1:m,:)).^2)
-%     % ylim([1:M/2])
-%     % pause(0.05)
-% end
-
-
-
-
-
 %% Main
-[tfr] = tfrgab2(x, M, L); %% compute SST
-Spect = abs(tfr(1:M/2,:)).^2;
-[tf,ia] = estim_FRI(Spect,Ncomp,F,M0,Method,L,tf0(:,1).*M);
+% [tfr0] = tfrgab2(x, M, L); %% compute SST
+% Spect0 = abs(tfr0(1:M/2,:)).^2;
+% [tf,ia] = estim_FRI(Spect,Ncomp,F,M0,Method,L,tf0(:,1).*M);
 
 
 
-%% Plots
+% Plots
 figure(1)
 subplot(2,1,1)
 imagesc((Spect0))
