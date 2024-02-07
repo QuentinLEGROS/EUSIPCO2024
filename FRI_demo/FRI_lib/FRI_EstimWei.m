@@ -1,4 +1,4 @@
-function [FoundDiracsWeights] = FRI_EstimWei(mv,FoundDiracsLocations,NbDiracs,LenF,y,modF)
+function [FoundDiracsWeights] = FRI_EstimWei(mv,FoundDiracsLocations,NbDiracs,LenF,y)
 % [FoundDiracsWeights] = FRI_EstimWei(mv,FoundDiracsLocations,NbDiracs,LenF,y)
 %
 % Weight retrivial by solving a linear system
@@ -17,12 +17,15 @@ function [FoundDiracsWeights] = FRI_EstimWei(mv,FoundDiracsLocations,NbDiracs,Le
 % Date: 12-may-2021
 
 
-% FoundDiracsLocations = sort(mod(FoundDiracsLocations - (LenF-modF) -1, LenF))-1;
 
+% FoundDiracsLocations = round(FoundDiracsLocations);
 C = kron(mv',FoundDiracsLocations(1:NbDiracs)); 
 C = exp((-1i * 2 * pi * C) ./ LenF);
 
-FoundDiracsWeights = sqrt(2*abs(pinv(C)*y));
+FoundDiracsWeights = sqrt(abs(lsqr(C,y)))*norm(y);
+end
 
-% FoundDiracsWeights = sqrt(2*abs(lsqr(C,y)));
+
+
+
 

@@ -35,11 +35,14 @@ else
     for j=0:L
         T(:,j+1)=y(L-j+1:end-j);
     end
+
     % SVD
-    [U,S,V] = svd(T);
+    [~,~,V] = svd(T);
+
     % Estimation of H : vecteur propre correspondant a la plus petite valeur
     % propre de S
     H = conj(V(:,end));
+
 end
     
 

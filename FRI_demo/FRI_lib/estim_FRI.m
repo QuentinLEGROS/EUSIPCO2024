@@ -1,4 +1,4 @@
-function [Estim_IF,Estim_A] = estim_FRI(Spect,NbDiracs,F,M0,Method,L,tgt)
+function [Estim_IF,Estim_A] = estim_FRI(Spect,NbDiracs,F,M0,Method,ifia,Oracle,tgt)
 % [Estim_Spect,Estim_IF,Estim_A] = estim_FRI(Spect,NbDiracs,F,M0)
 %
 % Main algorithm - estimate the modes IFs and amplitudes using the FRI
@@ -29,71 +29,30 @@ mv = -M0:M0;                               % we keep 2*M0+1 Fourier coefficients
 Estim_IF = zeros(N,NbDiracs);              % To store IF estimates
 Estim_A = zeros(N,NbDiracs);               % To store amplitude estimates
 
-mm = (1:M);
-phihat = 1/M*fft(F); % division par LenF (la taille de F) pour obtenir une approximation des coefficients de Fourier
-phiH(1:2*M0+1) = transpose(conj([phihat(end-M0+1:end)' phihat(1:M0+1)']));
+phihat = (1/(M))*fft(F); % division par LenF (la taille de F) pour obtenir une approximation des coefficients de Fourier
+phiH(1:2*M0+1) = [phihat(end-M0+1:end);phihat(1:M0+1)];
 V = exp((1i * 2 * pi * kron((1:M)',mv)) ./ M);
 Dphi = diag(phiH(1:2*M0+1));
 
-
-% First time bin
-tbin = 10;
-m = Spect(:,tbin); % Load current signal
-y =  Dphi \ (pinv(V) * m);
-h = anF(Method,y,NbDiracs,(length(y)-1)/2,0);
-[Estim_IF(tbin,:)] = FRI_EstimLoc(h,NbDiracs,M,modF); 
-Estim_IF(tbin,:) = sort(mod(Estim_IF(tbin,:) - (M-modF) -1, M))-1;
-tf0 = round(Estim_IF(tbin,:));
-Estim_A(tbin,:) = FRI_EstimWei(mv,Estim_IF(tbin,:),NbDiracs,M,y,modF);
-
-% tf0
-% Estim_A(tbin,:)
-% Next time bins
-for tt = 2:N
+% Estimation
+for tt = 1:N
     m = Spect(:,tt); % Load current signal
     y =  Dphi \ (pinv(V) * m);
-    
+
     %% Annihilating filter method
     h = anF(Method,y,NbDiracs,(length(y)-1)/2,0);
     
     %% Locations retrieval
-    [Estim_IF(tt,:)] = FRI_EstimLoc(h,NbDiracs,M,modF);    
-    Estim_IF(tt,:) = sort(mod(Estim_IF(tt,:) - (M-modF) -1, M))-1;
-    % tf = round(Estim_IF(tt,:));
-
-    %% Frequency modulation
-    % tfdiff = (tf-tf0)./M;
-    % [tf0 tf]
-    % for Nc = 1:NbDiracs
-    %     [Fchirp(:,Nc),A] = (stft_chirp(mm, 1, M, L, tf0/M, tfdiff(Nc)));
-    %     Fchirp= Fchirp.^2;   %% square modulus
-    % end
-    % tf0 = tf;
-
-    % phihat = 1/M*fft(F); % division par LenF (la taille de F) pour obtenir une approximation des coefficients de Fourier
-    % phiH(1:2*M0+1) = transpose(conj([phihat(end-M0+1:end)' phihat(1:M0+1)']));
-    % Dphi = diag(phiH(1:2*M0+1));
-    % y =  Dphi \ (pinv(V) * m);
-
-% figure(10)
-% hold on
-% plot(m)
-% plot(F, 'g-.')
-% plot(Fchirp, 'r--')
-% hold off
-% 
-% 
-% A
+    [Estim_IF(tt,:)] = FRI_EstimLoc(h,NbDiracs,M);    
+    Estim_IF(tt,:) = sort(mod(Estim_IF(tt,:) - (M-modF) -1, M));
+    Estim_IF(tt,:) = max(min(Estim_IF(tt,:),M),1);
 
 
     %% Estimate amplitude
-    [Estim_A(tt,:)] = FRI_EstimWei(mv,Estim_IF(tt,:),NbDiracs,M,y,modF);
-        % [Estim_A(tt,:)] = FRI_EstimWei(mv,tgt(tt,:),NbDiracs,M,y,modF);
-
-% close all
-end
-
-
-
+    if (ifia && ~Oracle)
+        [Estim_A(tt,:)] = FRI_EstimWei(mv,Estim_IF(tt,:),NbDiracs,M,y);
+    elseif (ifia && Oracle)
+        [Estim_A(tt,:)] = FRI_EstimWei(mv,tgt(tt,:),NbDiracs,M,y);
+    end
 
 end

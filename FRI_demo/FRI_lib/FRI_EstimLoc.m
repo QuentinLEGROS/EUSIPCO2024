@@ -1,4 +1,4 @@
-function [FoundDiracsLocations] = FRI_EstimLoc(h,NbDiracs,LenF,modF)
+function [FoundDiracsLocations] = FRI_EstimLoc(h,NbDiracs,LenF)
 % [FoundDiracsLocations] = FRI_EstimLoc(h,NbDiracs,LenF,modF)
 %
 % Position retrivial through the computation of the roots of the Z
@@ -17,14 +17,11 @@ function [FoundDiracsLocations] = FRI_EstimLoc(h,NbDiracs,LenF,modF)
 % Date: 12-may-2021
 
 % Method: annihilating filter search root of the z-transform (closest to unit circle)
+%h(1)=1;
+
 TZroot = conj(roots(h));
 [~,index] = sort(abs(abs(TZroot)-1));
 TZroot = TZroot(index(1:NbDiracs));
 
 % Location
 FoundDiracsLocations = LenF * imag(log(TZroot.'))  ./ (2*pi);
-% 
-% % Correction according to the data distribution shift (not centered)
-% FoundDiracsLocations = sort(mod(FoundDiracsLocations - (LenF-modF) -1, LenF));
-% FoundDiracsLocations = (mod(FoundDiracsLocations - (LenF-modF) -1, LenF))-1;
-
