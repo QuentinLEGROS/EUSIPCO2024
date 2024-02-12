@@ -83,8 +83,8 @@ ifplot =  0; % plot intermediary estimation of each ridge using the proposed app
 
 % Parameter of recursive FRI
 k=3;                                        % recursive filter order
-[F,a,b] = init_recursif_data(M,L,k);
-F = transpose(F);
+[Fr,a,b] = init_recursif_data(M,L,k);
+Fr = transpose(Fr);
 
 
 %% Initialization
@@ -187,24 +187,15 @@ for indsnr = 1%:length(SNRt)
                         [tf,~] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
                 case 10 %% FRI - SST
                        Method = 2;
-                        Spect = SpectSST(:,:,it,indsnr);
+                       [tfr] = tfrgab2(x, M, L); %% compute SST
+                       Spect = SpectSST(:,:,it,indsnr);
+                       M0 = 10;
                        [tf,~] = estim_FRI(Spect,Ncomp,F_sst,M0,Method,ifia,Oracle,tgt);
                 case 11 %% Recursive FRI
                        Method = 2;
-                       M0 = 20
-                       xp = [zeros(k-1,1);x];
-                       tfrp    = zeros(M/2, N+k);   % Initialization
-                        for n = k:N+k-1
-                            tfrp(:,n+1) = transpose(sum(b.*xp(n-k+1:n),1)) - sum(a.*tfrp(:,n-k+1:n),2);
-                            Spect(:,n-k+1) = abs(tfrp(:,n+1)).^2;
-                            % Spect(:,n-k+1) = abs(tfrp(:,n+1));
-                            if sum(Spect(:,n-k+1))>=1e-6
-                                [tf(n-k+1,:),ia(n-k+1,:)] = estim_FRI_recursif(Spect(:,n-k+1),Ncomp,F,M0,Method);
-                            else
-                                tf(n-k+1,:) = NaN;
-                                ia(n-k+1,:) = NaN;
-                            end
-                        end
+                       M0 = 10;
+                       [tfr] = tfrgab2(x, M, L); %% compute SST%tfrsst; %% compute SST
+                       tf = estim_RFRI(x,Fr,M,N,k,a,b,Ncomp,Method,M0);
             end  %% switch
 
             [mask] = compMask(round(tf),Pnei,N,0);

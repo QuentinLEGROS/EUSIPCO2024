@@ -1,4 +1,4 @@
-function [Estim_IF,Estim_A] = estim_FRI_recursif(Spect,NbDiracs,F,M0,Method)
+function [Estim_IF] = estim_FRI_recursif(Spect,NbDiracs,F,M0,Method)
 % [Estim_Spect,Estim_IF,Estim_A] = estim_FRI(Spect,NbDiracs,F,M0)
 %
 % Main algorithm - estimate the modes IFs and amplitudes using the FRI
@@ -45,7 +45,7 @@ h = anF(Method,y,NbDiracs,M0,0);
 Estim_IF = sort(mod(Estim_IF - (M-modF) -1, M));
 
 %% Estimate amplitude
-[Estim_A] = FRI_EstimWei(mv,Estim_IF,NbDiracs,M,y);
+% [Estim_A] = FRI_EstimWei(mv,Estim_IF,NbDiracs,M,y);
 
 
 end

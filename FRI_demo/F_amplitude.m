@@ -57,7 +57,8 @@ Pnei = 10; % the output mask is of size 2*Pnei+1 -> extract only the ridge posit
 PneiMask = 5;
 alpha = 0.5;
 beta = 0.5;
-ifia = 1;
+ifia = 0;
+Oracle = 0;
 
 %% Compute ground truth
 tf0=zeros(N,1);
@@ -80,6 +81,17 @@ k = (-round(K/2):round(K/2)).^2;
 g = A * exp( C * k);
 G = sum(abs(fft(g)))/2;
 
+% Load SST
+F_sst=compF_SST(M,200);                    % compute data distribution for SST signal
+tfrsst = load('mData/sst_Fig2Spect.mat');
+SpectSST = tfrsst.Spect;
+% clear tfrsst
+
+
+% Parameter of recursive FRI
+k=3;                                        % recursive filter order
+[Fr,a,b] = init_recursif_data(M,L,k);
+Fr = transpose(Fr);
 
 %% analysis window
 Mm = M/2; % frequency support considered for the method (select M/2 if you want to take half of the frequency)
@@ -99,10 +111,12 @@ methods_name = {'EM',...
                 'Oracle Local',...
                 'FRI TLS (proposed)',...
                 'Oracle FRI TLS',...
+                'FRI SST',...
+                'FRI recursif'
                 };
             
             
-methods_to_use = [1 2 3 4 5 6 7 8 9];   % insert here the indices of the methods to compare (names above)
+methods_to_use = 10%[1 2 3 4 5 6 7 8 9 10];   % insert here the indices of the methods to compare (names above)
 
 nb_methods = length(methods_to_use);
 SNRt = snr_range(1):4:snr_range(2);
@@ -110,14 +124,14 @@ SNRt = snr_range(1):4:snr_range(2);
 MAE_out = zeros(length(SNRt), nb_methods);
 
 %% Compute RQF
-for indsnr = 1:length(SNRt)
+for indsnr = 1%:length(SNRt)
   fprintf(1, "+ SNR=%d dB \n", SNRt(indsnr));
-  SNRi = SNRt(indsnr);
+  SNRi = inf%SNRt(indsnr);
 
     for ind_met = 1:length(methods_to_use)
         MAE_tmp = zeros(MCrep,1);
         
-        for it = 1:MCrep   %% iterations
+        for it = 1%:MCrep   %% iterations
             clc;
             disp(strcat(['Method :', methods_name{methods_to_use(ind_met)}]));
             disp(strcat(['SNR : ',num2str(indsnr),' / ',num2str(length(SNRt))]));
@@ -166,23 +180,31 @@ for indsnr = 1:length(SNRt)
                 case 7  %% FRI TLS
                         Method = 2;
                         M0 = 10;
-                        Oracle = 0;
                         [tfr] = tfrgab2(x, M, L); %% compute SST
                         Spect = abs(tfr(1:M/2,:)).^2;
-                        [tf,Amp] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
+                        [tf,~] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
+                        [Amp] = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf)); 
                 case 8  %% Oracle FRI TLS
                         Method = 2;
                         M0 = 10;
-                        Oracle = 1;
                         [tfr] = tfrgab2(x, M, L); %% compute SST
                         Spect = abs(tfr(1:M/2,:)).^2;
-                        [tf,Amp] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
+                        [tf,~] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
+                        [Amp] = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf)); 
                 case 9 %% FRI - SST
                        Method = 2;
-                       Oracle = 0;
-                        Spect = SpectSST(:,:,it,indsnr);
-                       [tf,Amp] = estim_FRI(Spect,Ncomp,F_sst,M0,Method,ifia,Oracle,tgt);
+                       M0 = 10;
+                       [tfr] = tfrgab2(x, M, L); %% compute SST%tfrsst; %% compute SST
+                       Spect = SpectSST(:,:,it,indsnr);
+                       [tf,~] = estim_FRI(Spect,Ncomp,F_sst,M0,Method,ifia,Oracle,tgt);
+                       [Amp] = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf)); 
                        
+                case 10 %% Recursive FRI
+                       Method = 2;
+                       M0 = 10;
+                       [tfr] = tfrgab2(x, M, L); %% compute SST%tfrsst; %% compute SST
+                       tf = estim_RFRI(x,Fr,M,N,k,a,b,Ncomp,Method,M0);
+                       ia = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf)); 
             end  %% switch
             
             [mask] = compMask(round(tf),Pnei,M/2,0);
