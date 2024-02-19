@@ -13,7 +13,7 @@ for n = k:N+k-1
     if mean(Spect(:,n-k+1))>=1e-3
         [tf(n-k+1,:)] = estim_FRI_recursif(Spect(:,n-k+1),Ncomp,Fr,M0,Method);
     else
-        tf(n-k+1,:) = NaN.*ones(1,Ncomp);
+        tf(n-k+1,:) = ones(1,Ncomp);
         % ia(n-k+1,:) = NaN.*ones(1,Ncomp);
     end
 end
