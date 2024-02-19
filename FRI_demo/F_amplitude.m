@@ -34,13 +34,30 @@ L       = 20;        %% analysis window size (in bin)
 %% Define signal x0
 N     = 500;                        %% signal length
 
-% Amplitude modulated
-amp0=((0.5.*cos(2*pi*(0:N-1)/(2*N/3)))+1)';
+% % Amplitude modulated
+% amp0=((0.5.*cos(2*pi*(0:N-1)/(2*N/3)))+1)';
+% amp0=(linspace(1,2,N))';
+% 
+% % X(:,1) = amp0.*(fmlin(N,0.15,0.3));
+% % tf0(:,1) = ((linspace(0.15,0.3,N)).*M); % IF Ground truth
+% % tgt = tf0;
+% X(:,1) = amp0.*(fmconst(N,0.3));
+% tf0(:,1) = (0.3.*ones(N,1).*M); % IF Ground truth
+% tgt = tf0;
 
-X(:,1) = amp0.*(fmlin(N,0.15,0.3));
+
+% Amplitude modulated
+amp0(:,1)=(1:-0.5/(N-1):0.5);
+% amp0(:,2)=(0.5:0.5/(N-1):1);
+
+
+X(:,1) = amp0(:,1).*(fmlin(N,0.15,0.3));
 tf0(:,1) = ((linspace(0.15,0.3,N)).*M); % IF Ground truth
 tgt = tf0;
-% X(:,1) = amp0.*(fmconst(N,0.3));
+% X(:,2) = amp0(:,2).*real(fmsin(N,0.3,0.45,700,1,0.3,+1));
+
+
+
 
 
 
@@ -82,6 +99,12 @@ k = (-round(K/2):round(K/2)).^2;
 g = A * exp( C * k);
 G = sum(abs(fft(g)))/2;
 
+
+%% Calcul step_r and step_v
+sigm_d = round(sqrt((M/2)/(pi*L)));
+step_r = 3*sigm_d;
+step_v = 3*step_r;
+
 % Load SST
 F_sst=compF_SST(M,200);                    % compute data distribution for SST signal
 tfrsst = load('mData/sst_Fig2Spect.mat');
@@ -107,7 +130,6 @@ methods_name = {'EM',...
                 'Oracle EM',...
                 'PB',...
                 'Oracle PB',...
-                'Local',...
                 'Oracle Local',...
                 'FRI TLS (proposed)',...
                 'Oracle FRI TLS',...
@@ -116,7 +138,7 @@ methods_name = {'EM',...
                 };
             
             
-methods_to_use = [1 2 3 4 5 6 7 8 9 10];   % insert here the indices of the methods to compare (names above)
+methods_to_use = 9%[1 2 3 4 5 6 7 8 9];   % insert here the indices of the methods to compare (names above)
 
 nb_methods = length(methods_to_use);
 SNRt = snr_range(1):4:snr_range(2);
@@ -124,14 +146,14 @@ SNRt = snr_range(1):4:snr_range(2);
 MAE_out = zeros(length(SNRt), nb_methods);
 
 %% Compute RQF
-for indsnr = 1:length(SNRt)
+for indsnr = 1%:length(SNRt)
   fprintf(1, "+ SNR=%d dB \n", SNRt(indsnr));
-  SNRi = SNRt(indsnr);
+  SNRi = inf%SNRt(indsnr);
 
     for ind_met = 1%:length(methods_to_use)
         MAE_tmp = zeros(MCrep,1);
         
-        for it = 1:MCrep   %% iterations
+        for it = 1%:MCrep   %% iterations
             clc;
             disp(strcat(['Method :', methods_name{methods_to_use(ind_met)}]));
             disp(strcat(['SNR : ',num2str(indsnr),' / ',num2str(length(SNRt))]));
@@ -143,18 +165,15 @@ for indsnr = 1:length(SNRt)
             
             switch(methods_to_use(ind_met))
                 case 1  %% Proposed EM 
-                        step_r = 10;
-                        step_v = 10;
-                        [tfr]  = tfrgab2(x, M, L);
+                        [tfr]  = tfrgab2(real(x), M, L);
                         Spect = abs(tfr(1:M/2,:)).^2;
                         [Fc]=comp_Fc(M,L);Fc = Fc + eps;     %% Data distribution
-                        ifplot = 0;
-                        [~,~,tf,Amp]=Mod_Estim_W_EM_multi(Spect',Fc,Ncomp,1,'Lap',1e-1,step_r,step_v,ifplot,0,1,G,1,L);
+                        [~,~,tf,Amp]=Mod_Estim_W_EM_multi(Spect',Fc,Ncomp,1,'Lap',1e-2,step_r,step_v,ifplot,0,1,G,1,L);
                         tf1(:,:,it) = tf;
                 case 2  %% Oracle EM
                         step_r = 10;
                         step_v = 10;
-                        [tfr]  = tfrgab2(x, M, L);
+                        [tfr]  = tfrgab2(real(x), M, L);
                         Spect = abs(tfr(1:M/2,:)).^2;
                         [Fc]=comp_Fc(M,L);Fc = Fc + eps;     %% Data distribution
                         [Amp]=Oracle_EM(Spect',Fc,Ncomp,G,tf0,M,L);
@@ -162,36 +181,31 @@ for indsnr = 1:length(SNRt)
                 case 3  %% Beta divergence
                         alpha  = 0.4;
                         beta   = 0.2;
-                        [tfr]  = tfrgab2(x, M, L);
+                        [tfr]  = tfrgab2(real(x), M, L);
                         [tf,Amp] = PB_Oracle(tfr,Ncomp, M, L, div, beta, alpha, ds, Pnei, ifplot,detect,0,PneiMask,tf0);
                 case 4 %% Oracle PB
                         alpha  = 0.4;
                         beta   = 0.2;
-                        [tfr]  = tfrgab2(x, M, L);
+                        [tfr]  = tfrgab2(real(x), M, L);
                         [tf,Amp] = PB_Oracle(tfr,Ncomp, M, L, div, beta, alpha, ds, Pnei, ifplot,detect,1,PneiMask,tf0);
-                case 5 %% Local
+                case 5  %% Oracle Local
                         [tfr]  = tfrgab2(x, M, L);
-                        tf = squeeze(tf1(:,:,it));
-                        [Amp] = Oracle_Amp_DF(tfr,Ncomp,M,L,tf); 
-                case 6  %% Oracle Local
-                        [tfr]  = tfrgab2(x, M, L);
-                        tf = tf0;
-                        [Amp] = Oracle_Amp_DF(tfr,Ncomp,M,L,tf); 
-                case 7  %% FRI TLS
+                        [Amp] = Oracle_Amp_DF(tfr,Ncomp,M,L,tf0); 
+                case 6  %% FRI TLS
                         Method = 2;
                         M0 = 10;
                         [tfr] = tfrgab2(x, M, L); %% compute SST
                         Spect = abs(tfr(1:M/2,:)).^2;
                         [tf,~] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
                         [Amp] = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf)); 
-                case 8  %% Oracle FRI TLS
+                case 7  %% Oracle FRI TLS
                         Method = 2;
                         M0 = 10;
                         [tfr] = tfrgab2(x, M, L); %% compute SST
                         Spect = abs(tfr(1:M/2,:)).^2;
                         [tf,~] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
                         [Amp] = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf)); 
-                case 9 %% FRI - SST
+                case 8 %% FRI - SST
                        Method = 2;
                        M0 = 10;
                        [tfr] = tfrgab2(x, M, L); %% compute SST%tfrsst; %% compute SST
@@ -199,14 +213,15 @@ for indsnr = 1:length(SNRt)
                        [tf,~] = estim_FRI(Spect,Ncomp,F_sst,M0,Method,ifia,Oracle,tgt);
                        [Amp] = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf)); 
                        
-                case 10 %% Recursive FRI
+                case 9 %% Recursive FRI
                        Method = 2;
                        M0 = 10;
                        [tfr] = tfrgab2(x, M, L); %% compute SST%tfrsst; %% compute SST
                        tf = estim_RFRI(x,Fr,M,N,k,a,b,Ncomp,Method,M0);
-                       ia = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf)); 
+                       Amp = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf)); 
             end  %% switch
             
+            tf = min(max(tf,1),M/2);
             [mask] = compMask(round(tf),Pnei,M/2,0);
             x_hat = zeros(Ncomp,N);
             for c = 1:Ncomp
