@@ -1,12 +1,24 @@
 function [F,a,b] = init_recursif_data(M,L,k)
 
+
+
 m0 = 0;   %% le bin frequentiel central (ridge)
 m_range = (-(M/4)+1:(M/4));
+
 omega0 = 2 * pi * m0/M;
 omega = 2*pi* m_range/M;
 T = L;
 F = (1+((omega-omega0)*T).^2).^(-k);
-F = F./max(F);
+F = transpose(F/(M/2));
+
+
+%% module
+% omega0 = 2*pi * (M/4)/M;
+% omega = -(M/4)+1:(M/4);
+% T = L;%L/(M/2);
+% F = (1+((omega-omega0)*T).^2).^(-k);
+% F = F./max(F);
+
 
 %% Recursive_STFT
 mm = 1:M/2;

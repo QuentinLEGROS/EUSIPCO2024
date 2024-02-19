@@ -20,7 +20,6 @@ addpath(strcat([folder 'tools']));
 addpath(strcat([folder 'PseudoBay']));
 addpath(strcat([folder 'Brevdo']));
 addpath(strcat([folder 'RecursiveSTFT']));
-
 addpath(strcat([folder 'FRI_lib']));
 addpath(strcat([folder 'RD']));
 
@@ -65,10 +64,10 @@ tgt = tf0;
 
 
 Mm = M/2; % frequency support considered for the method (select M/2 if you want to take half of the frequency)
-meanF = 100;
+meanF = 125;
 m = -meanF:(Mm)-meanF-1;                    % frequency support of the convolution kernel
 F = transpose(Fh(m, M, L ));                % Convolution kernel
-F = F./max(F); 
+% F = F./max(F); 
 
 
 F_sst=compF_SST(M,200);                    % compute data distribution for SST signal
@@ -84,8 +83,12 @@ ifplot =  0; % plot intermediary estimation of each ridge using the proposed app
 % Parameter of recursive FRI
 k=3;                                        % recursive filter order
 [Fr,a,b] = init_recursif_data(M,L,k);
-Fr = transpose(Fr);
 
+% figure
+% subplot(2,1,1)
+% plot(Fr,'k')
+% subplot(2,1,2)
+% plot(F,'r')
 
 %% Initialization
 methods_name = {'Brevdo [10]',...
@@ -101,7 +104,7 @@ methods_name = {'Brevdo [10]',...
                 'Recursive FRI (proposed)'
                 };
 
-methods_to_use = 11%[1 2 3 4 5 6 7 8 9 10 11];   % insert here the indices of the methods to compare (names above)
+methods_to_use = [1 2 3 4 5 6 7 8 9 10 11];   % insert here the indices of the methods to compare (names above)
 
 nb_methods = length(methods_to_use);
 SNRt = snr_range(1):4:snr_range(2);
@@ -115,15 +118,15 @@ clear tfrsst
 %% Compute MAE
 L2ErPos_out = zeros(length(SNRt), nb_methods);
 
-for indsnr = 1%:length(SNRt)
+for indsnr = 1:length(SNRt)
   fprintf(1, "+ SNR=%d dB \n", SNRt(indsnr));
-  SNRi = 10%SNRt(indsnr);
+  SNRi = SNRt(indsnr);
 
     for ind_met = 1:length(methods_to_use)
         L2ErPos_tmp = zeros(length(MCrep));
 
         
-        for it = 1%:MCrep   %% iterations
+        for it = 1:MCrep   %% iterations
             clc;
             disp(strcat(['Method :', methods_name{methods_to_use(ind_met)}]));
             disp(strcat(['SNR : ',num2str(indsnr),' / ',num2str(length(SNRt))]));
@@ -219,7 +222,7 @@ end %% snrs
 
 
 %% Plot -- 1
-cols         = {'k-x' 'r-o' 'r-v' 'r-x' 'k-^' 'g-o' 'b-v' 'b-x' 'g-x' 'g-^'};
+cols         = {'k-x' 'r-o' 'r-v' 'r-x' 'k-^' 'g-o' 'b-v' 'b-x' 'g-x' 'g-^' 'g-+'};
 leg = {};
 
 figure(1)

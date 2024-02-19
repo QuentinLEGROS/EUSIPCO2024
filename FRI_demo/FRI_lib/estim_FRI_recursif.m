@@ -28,7 +28,7 @@ mv = -M0:M0;                               % we keep 2*M0+1 Fourier coefficients
 [~,modF]=max(F);                           % Mode storing
 
 phihat = 1/M*fft(F); % division par LenF (la taille de F) pour obtenir une approximation des coefficients de Fourier
-phiH(1:2*M0+1) = transpose(conj([phihat(end-M0+1:end)' phihat(1:M0+1)']));
+phiH(1:2*M0+1) = [phihat(end-M0+1:end);phihat(1:M0+1)];
 V = exp((1i * 2 * pi * kron((1:M)',mv)) ./ M);
 Dphi = diag(phiH(1:2*M0+1));
 
@@ -43,6 +43,7 @@ h = anF(Method,y,NbDiracs,M0,0);
 %% Locations retrieval
 [Estim_IF] = FRI_EstimLoc(h,NbDiracs,M);    
 Estim_IF = sort(mod(Estim_IF - (M-modF) -1, M));
+Estim_IF = max(min(Estim_IF,M),1);
 
 %% Estimate amplitude
 % [Estim_A] = FRI_EstimWei(mv,Estim_IF,NbDiracs,M,y);

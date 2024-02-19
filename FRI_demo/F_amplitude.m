@@ -21,6 +21,7 @@ addpath(strcat([folder 'synchrosqueezedSTFT']));
 addpath(strcat([folder 'PseudoBay']));
 addpath(strcat([folder 'tools']));
 addpath(strcat([folder 'FRI_lib']));
+addpath(strcat([folder 'RecursiveSTFT']));
 addpath(strcat([folder 'Modul_EM']));
 addpath(strcat([folder 'Compute_Amplitude_DF']));
 
@@ -91,7 +92,6 @@ SpectSST = tfrsst.Spect;
 % Parameter of recursive FRI
 k=3;                                        % recursive filter order
 [Fr,a,b] = init_recursif_data(M,L,k);
-Fr = transpose(Fr);
 
 %% analysis window
 Mm = M/2; % frequency support considered for the method (select M/2 if you want to take half of the frequency)
@@ -116,7 +116,7 @@ methods_name = {'EM',...
                 };
             
             
-methods_to_use = 10%[1 2 3 4 5 6 7 8 9 10];   % insert here the indices of the methods to compare (names above)
+methods_to_use = [1 2 3 4 5 6 7 8 9 10];   % insert here the indices of the methods to compare (names above)
 
 nb_methods = length(methods_to_use);
 SNRt = snr_range(1):4:snr_range(2);
@@ -124,14 +124,14 @@ SNRt = snr_range(1):4:snr_range(2);
 MAE_out = zeros(length(SNRt), nb_methods);
 
 %% Compute RQF
-for indsnr = 1%:length(SNRt)
+for indsnr = 1:length(SNRt)
   fprintf(1, "+ SNR=%d dB \n", SNRt(indsnr));
-  SNRi = inf%SNRt(indsnr);
+  SNRi = SNRt(indsnr);
 
-    for ind_met = 1:length(methods_to_use)
+    for ind_met = 1%:length(methods_to_use)
         MAE_tmp = zeros(MCrep,1);
         
-        for it = 1%:MCrep   %% iterations
+        for it = 1:MCrep   %% iterations
             clc;
             disp(strcat(['Method :', methods_name{methods_to_use(ind_met)}]));
             disp(strcat(['SNR : ',num2str(indsnr),' / ',num2str(length(SNRt))]));

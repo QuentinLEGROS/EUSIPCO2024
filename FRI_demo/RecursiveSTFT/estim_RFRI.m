@@ -10,11 +10,11 @@ tfrp    = zeros(M/2, N+k);   % Initialization
 for n = k:N+k-1
     tfrp(:,n+1) = transpose(sum(b.*xp(n-k+1:n),1)) - sum(a.*tfrp(:,n-k+1:n),2);
     Spect(:,n-k+1) = abs(tfrp(:,n+1)).^2;
-    if sum(Spect(:,n-k+1))>=1e-6
+    if mean(Spect(:,n-k+1))>=1e-3
         [tf(n-k+1,:)] = estim_FRI_recursif(Spect(:,n-k+1),Ncomp,Fr,M0,Method);
     else
-        tf(n-k+1,:) = NaN;
-        % ia(n-k+1,:) = NaN;
+        tf(n-k+1,:) = NaN.*ones(1,Ncomp);
+        % ia(n-k+1,:) = NaN.*ones(1,Ncomp);
     end
 end
 
