@@ -138,7 +138,7 @@ methods_name = {'EM',...
                 };
             
             
-methods_to_use = 9%[1 2 3 4 5 6 7 8 9];   % insert here the indices of the methods to compare (names above)
+methods_to_use = [1 2 3 4 5 6 7 8 9];   % insert here the indices of the methods to compare (names above)
 
 nb_methods = length(methods_to_use);
 SNRt = snr_range(1):4:snr_range(2);
@@ -146,14 +146,14 @@ SNRt = snr_range(1):4:snr_range(2);
 MAE_out = zeros(length(SNRt), nb_methods);
 
 %% Compute RQF
-for indsnr = 1%:length(SNRt)
+for indsnr = 1:length(SNRt)
   fprintf(1, "+ SNR=%d dB \n", SNRt(indsnr));
-  SNRi = inf%SNRt(indsnr);
+  SNRi = SNRt(indsnr);
 
-    for ind_met = 1%:length(methods_to_use)
+    for ind_met = 1:length(methods_to_use)
         MAE_tmp = zeros(MCrep,1);
         
-        for it = 1%:MCrep   %% iterations
+        for it = 1:MCrep   %% iterations
             clc;
             disp(strcat(['Method :', methods_name{methods_to_use(ind_met)}]));
             disp(strcat(['SNR : ',num2str(indsnr),' / ',num2str(length(SNRt))]));
@@ -244,12 +244,12 @@ end %% snrs
 % Normalization
 MAE_out = MAE_out ./(N*Ncomp);
 
-figure(4)
-% subplot(2,1,1)
-hold on;
-plot(amp0,'r')
-% subplot(2,1,2)
-plot(Amp,'b')
+% figure(4)
+% % subplot(2,1,1)
+% hold on;
+% plot(amp0,'r')
+% % subplot(2,1,2)
+% plot(Amp,'b')
 
 %% Plot
 cols         = {'k-x' 'b-x' 'g-x' 'r-x' 'k-o' 'b-s' 'g-.' 'r-.' 'b-v'  'b--' 'b*'};

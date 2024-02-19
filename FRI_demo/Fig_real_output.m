@@ -70,7 +70,7 @@ x = sigmerge(x0, randn(size(x0)), SNR);
 %% Main
 [tfr] = tfrgab2(x, M, L); %% compute SST
 Spect = abs(tfr(1:M/2,:)).^2;
-[tf,ia] = estim_FRI(Spect,Ncomp,F,M0,Method);
+[tf,ia] = estim_FRI(Spect,Ncomp,F,M0,Method,0,0,0);
 
 
 %% Plots

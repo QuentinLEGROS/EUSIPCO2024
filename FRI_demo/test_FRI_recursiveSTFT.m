@@ -19,7 +19,7 @@ addpath(strcat([folder 'synchrosqueezedSTFT']));
 addpath(strcat([folder 'FRI_lib']));
 addpath(strcat([folder 'RecursiveSTFT']));
 addpath(strcat([folder 'modulation']));
-
+addpath(strcat([folder 'Compute_Amplitude_DF']));
 %% Time-frequency representation parameters
 N     = 500;       %% signal length
 M     = 500;       %% Number of frequential bin
@@ -63,7 +63,6 @@ x = sigmerge(x0, randn(size(x0)), SNR);
 
 %% Define analysis window and parameters for the recursif STFT
 [F,a,b] = init_recursif_data(M,L,k);
-F = transpose(F); 
 
 
 xp = [zeros(k-1,1);x];
@@ -76,11 +75,11 @@ for n = k:N+k-1
     Spect(:,n-k+1) = abs(tfrp(:,n+1)).^2;
     % Spect(:,n-k+1) = abs(tfrp(:,n+1));
     
-if sum(Spect(:,n-k+1))>=1e-6
-    [tf(n-k+1,:),ia(n-k+1,:)] = estim_FRI_recursif(Spect(:,n-k+1),Ncomp,F,M0,Method);
+if mean(Spect(:,n-k+1))>=1e-3
+    [tf(n-k+1,:)] = estim_FRI_recursif(Spect(:,n-k+1),Ncomp,F,M0,Method);
 else
-    tf(n-k+1,:) = NaN;
-    ia(n-k+1,:) = NaN;
+    tf(n-k+1,:) = 1;
+    ia(n-k+1,:) = 1;
 end
 % hold on
 % imagesc(abs(tfrp).^2)
@@ -89,6 +88,8 @@ end
 % pause(0.01)
 end
 
+[tfr] = tfrgab2(x, M, L);
+Amp = Oracle_Amp_DF(tfr,Ncomp,M,L,round(tf));
 %% plot Window - spectrogram
 Spect = abs(tfrp(:,k+1:end)).^2;
 
