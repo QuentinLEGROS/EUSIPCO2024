@@ -32,10 +32,6 @@ for m = 1:Nfbins,
  alpha  = exp(pTs);
  [a,b]  = Gk2(k, L, alpha);
  tfr(m,:) = filter(b,a,x);
-
-imagesc(abs(tfr(1:m,:)).^2)
-
-pause(0.05)
 end
 
 %tfr = abs(tfr).^2;

@@ -1,4 +1,4 @@
-function [tf] = estim_RFRI(x,Fr,M,N,k,a,b,Ncomp,Method,M0)
+function [tf,tfrp] = estim_RFRI(x,Spect0,Fr,F,M,N,k,a,b,Ncomp,Method,M0)
 
 
 
@@ -13,7 +13,9 @@ for n = k:N+k-1
     if mean(Spect(:,n-k+1))>=1e-3
         [tf(n-k+1,:)] = estim_FRI_recursif(Spect(:,n-k+1),Ncomp,Fr,M0,Method);
     else
-        tf(n-k+1,:) = ones(1,Ncomp);
+
+        [tf(n-k+1,:),~] = estim_FRI(Spect0(:,n-k+1),Ncomp,F,M0,Method,0,0,0);
+        % tf(n-k+1,:) = ones(1,Ncomp);
         % ia(n-k+1,:) = NaN.*ones(1,Ncomp);
     end
 end
