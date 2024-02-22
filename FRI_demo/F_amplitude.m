@@ -270,12 +270,12 @@ end %% snrs
 % Normalization
 MAE_out = MAE_out ./(N*Ncomp);
 
-figure(4)
-% subplot(2,1,1)
-hold on;
-plot(amp0,'r')
-% subplot(2,1,2)
-plot(Amp,'b')
+% figure(4)
+% % subplot(2,1,1)
+% hold on;
+% plot(amp0,'r')
+% % subplot(2,1,2)
+% plot(Amp,'b')
 
 %% Plot
 cols         = {'k-x' 'b-x' 'g-x' 'r-x' 'k-o' 'b-s' 'g-.' 'r-.' 'b-v'  'b--' 'b*'};
