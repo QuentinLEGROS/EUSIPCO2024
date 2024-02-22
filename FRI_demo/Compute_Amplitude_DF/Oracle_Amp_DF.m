@@ -1,4 +1,4 @@
-function [A_hat] = Oracle_Amp_DF(tfr,Ncomp,L,tf0)
+function [A_hat,x_hat] = Oracle_Amp_DF(tfr,Ncomp,L,tf0)
 %
 % Main algorithm: estimate the ridge position and the variance of the
 % posterior distribution to propagate information to the next time sequence
