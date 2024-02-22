@@ -109,12 +109,6 @@ methods_to_use = [1 2 3 4 5 6 7 8 9 10 11];   % insert here the indices of the m
 nb_methods = length(methods_to_use);
 SNRt = snr_range(1):4:snr_range(2);
 
-
-tfrsst = load('mData/sst_Fig2Spect.mat');
-SpectSST = tfrsst.Spect;
-clear tfrsst
-
-
 %% Compute MAE
 L2ErPos_out = zeros(length(SNRt), nb_methods);
 
@@ -139,77 +133,96 @@ for indsnr = 1:length(SNRt)
             
             switch(methods_to_use(ind_met))
                case 1 % Brevdo
-                    [tfr] = tfrgab2(x, M, L);       %% compute STFT
-                    [~,~,tf] = Brevdo_modeExtract(tfr, L, Ncomp, Pnei);
-                    tf = tf';   
+                        [tfr] = tfrgab2(x, M, L);       %% compute STFT
+                        [~,~,tf] = Brevdo_modeExtract(tfr, L, Ncomp, Pnei);
+                        tf = tf';   
+                        I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                case 2  %% Beta divergence
                         beta  = 0.3; % beta divergence hyperparameter  ||  POSITIVE AND DIFFERENT TO 0
                         div   = 2;   % 2 = beta
                         [tfr]  = tfrgab2(x, M, L);
                         [~,tf] = pseudoBay(tfr,Ncomp, M, L, div, beta, alpha, ds, Pnei, ifplot);
+                        I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                case 3  %% Beta divergence
                         beta  = 0.7; % beta divergence hyperparameter  ||  POSITIVE AND DIFFERENT TO 0
                         div   = 2;   % 2 = beta
                         [tfr]  = tfrgab2(x, M, L);
                         [~,tf] = pseudoBay(tfr,Ncomp, M, L, div, beta, alpha, ds, Pnei,ifplot);
+                        I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                case 4  %% Alpha divergence
                         alpha = 0.3; % Renyi divergence hyperparameter ||  POSITIVE AND DIFFERENT TO 1
                         div   = 3;   % 2 = beta
                         [tfr]  = tfrgab2(x, M, L);
                         [~,tf] = pseudoBay(tfr,Ncomp, M, L, div, beta, alpha, ds, Pnei,ifplot);
-
+                        I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                case 5  %% simple method
                         Nr = Ncomp;
                         sigma_s = 0.09;
                         clwin = 10;
                         [ m_SR_Cl,m_SR_MB,m_LCR_Cl, m_LCR_MB, STFT, Cs_simple] = Nils_modeExtract(x, M, Nr, sigma_s, clwin );
                         tf = Cs_simple';
+                        I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                 case 6  %% FRI
                         Method = 1;
                         M0 = 10;
                         [tfr] = tfrgab2(x, M, L); %% compute SST
                         Spect = abs(tfr(1:M/2,:)).^2;
                         [tf,~] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
+                        I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                 case 7  %% FRI TLS
                         Method = 2;
                         M0 = 5;
                         [tfr] = tfrgab2(x, M, L); %% compute SST
                         Spect = abs(tfr(1:M/2,:)).^2;
                         [tf,~] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
+                        I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                 case 8  %% FRI TLS
                         Method = 2;
                         M0 = 10;
                         [tfr] = tfrgab2(x, M, L); %% compute SST
                         Spect = abs(tfr(1:M/2,:)).^2;
                         [tf,~] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
+                        I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                 case 9  %% FRI TLS
                         Method = 2;
                         M0 = 20;
                         [tfr] = tfrgab2(x, M, L); %% compute SST
                         Spect = abs(tfr(1:M/2,:)).^2;
                         [tf,~] = estim_FRI(Spect,Ncomp,F,M0,Method,ifia,Oracle,tgt);
+                        I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                 case 10 %% FRI - SST
                        Method = 2;
-                       [tfr] = tfrgab2(x, M, L); %% compute SST
-                       Spect = SpectSST(:,:,it,indsnr);
                        M0 = 10;
+                       [~,stfr, ~,~,~] = tfrvsgab2(real(x), M, L);
+                       Spect = abs(stfr(1:M/2,:)).^2;
                        [tf,~] = estim_FRI(Spect,Ncomp,F_sst,M0,Method,ifia,Oracle,tgt);
+                       [tfr] = tfrgab2(x, M, L); %% compute SST
+                       I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
                 case 11 %% Recursive FRI
                        Method = 2;
                        M0 = 10;
-                       [tfr] = tfrgab2(x, M, L); %% compute SST%tfrsst; %% compute SST
-                       tf = estim_RFRI(x,Fr,M,N,k,a,b,Ncomp,Method,M0);
+                       n0 = ((k-1)*L);
+                       xt = [x;zeros(n_pad+1,1)]; % padding
+                       [tfr, nfreqs] = recursive_stft(xt, k, L, 1, M, M); % calcul stft récursive
+                       Spect = abs(tfr(1:M/2,:)).^2;
+                       for n = k:length(xt)
+                            [tf(n,:)] = estim_FRI_recursif(Spect(:,n),Ncomp,Fr,M0,Method);
+                       end
+                       tf = max(min(tf,250),1);
+                       tf = [tf(end - N+1:end,:)];
+                       [tfr] = tfrgab2(x, M, L); %% compute SST
+                       I = sort_IF(tfr,tf,Pnei,X,M,L,Ncomp,N,0);
             end  %% switch
 
-            [mask] = compMask(round(tf),Pnei,N,0);
-            x_hat = zeros(Ncomp,N);
-            for c = 1:Ncomp
-               x_hat(c,:) = real(rectfrgab(tfr .* mask(1:M,:,c), L, M)); 
-            end
+            % [mask] = compMask(round(tf),Pnei,N,0);
+            % x_hat = zeros(Ncomp,N);
+            % for c = 1:Ncomp
+            %    x_hat(c,:) = real(rectfrgab(tfr .* mask(1:M,:,c), L, M)); 
+            % end
 
              % Match components and reordering for comparison
-            [I,~] = match_components(X, x_hat); 
-            x_hat = x_hat(I,:);
+            % [I,~] = match_components(X, x_hat); 
+            % x_hat = x_hat(I,:);
             tf = tf(:,I);
 
 

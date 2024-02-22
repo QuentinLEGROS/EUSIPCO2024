@@ -106,9 +106,9 @@ step_r = 3*sigm_d;
 step_v = 3*step_r;
 
 % Load SST
-F_sst=compF_SST(M,200);                    % compute data distribution for SST signal
-tfrsst = load('mData/sst_Fig2Spect.mat');
-SpectSST = tfrsst.Spect;
+% F_sst=compF_SST(M,200);                    % compute data distribution for SST signal
+% tfrsst = load('mData/sst_Fig2Spect.mat');
+% SpectSST = tfrsst.Spect;
 % clear tfrsst
 
 
@@ -249,8 +249,13 @@ for indsnr = 1:length(SNRt)
                        % tfr = tfr(:,end - N+1:end);
 
 %                        [tfr] = tfrgab2(x, M, L); %% compute SST%tfrsst; %% compute SST
-                       [Amp,x_hat] = Oracle_Amp_DF_recursif(tfr,k,n0,Ncomp,L,round(tf),n_pad); 
+
+
+                       % [Amp,x_hat] = Oracle_Amp_DF_recursif(tfr,k,n0,Ncomp,L,round(tf),n_pad); 
+
                        tf = [tf(end - N+1:end)];
+                       [tfr] = tfrgab2(x, M, L); %% compute SST
+                       [Amp,x_hat] = Oracle_Amp_DF(tfr,Ncomp,L,round(tf));
 
                         [I,~] = match_components(X, x_hat); 
 
