@@ -39,5 +39,7 @@ for n = n_pad-n0:length(xt)
     Spect(:,n-k+1) = abs(tfrp(:,n+1)).^2;
     [tf(n,:)] = estim_FRI_recursif(Spect(:,n-k+1),Ncomp,Fr,M0,Method);
 end
-tf = max(min(tf,250),1)+1;
-tf = [tf(end-N-k-(k-1):end-k-(k-1)-1,:)];
+
+% tf = [tf(end-N-k-(k-1):end-k-(k-1)-1,:)];
+tf = [tf(end-N-1:end-k+1,:)];
+tf = max(min(tf,M/2),1);
