@@ -26,7 +26,7 @@ addpath(strcat([folder 'Modul_EM']));
 addpath(strcat([folder 'Compute_Amplitude_DF']));
 
 snr_range = [-20 20]; % SNR range to compute
-MCrep = 100;          % number of MC realization (20-30 are sufficient to reproduce the figure behaviour)
+MCrep = 300;          % number of MC realization (20-30 are sufficient to reproduce the figure behaviour)
 
 %% Time-frequency representation parameters
 M       = 500;       %% Number of frequential bin
@@ -104,10 +104,10 @@ methods_name = {'EM',...
                 };
             
             
-methods_to_use = [1 3 5 6 7 8 9 10];   % insert here the indices of the methods to compare (names above)
+methods_to_use = [1 3 6 7 9 10];   % insert here the indices of the methods to compare (names above)
 
 nb_methods = length(methods_to_use);
-SNRt = snr_range(1):4:snr_range(2);
+SNRt = snr_range(1):2:snr_range(2);
 
 MAE_out = zeros(length(SNRt), nb_methods);
 
@@ -236,3 +236,7 @@ legend(h, leg, 'location', 'NorthWest', 'FontSize', 8)
 grid
 axis square
 set(gca, 'YScale', 'log')
+
+
+save('FigIA')
+
