@@ -19,7 +19,6 @@ addpath(strcat([folder 'synchrosqueezedSTFT']));
 addpath(strcat([folder 'tools']));
 addpath(strcat([folder 'PseudoBay']));
 addpath(strcat([folder 'Brevdo']));
-addpath(strcat([folder 'RecursiveSTFT']));
 addpath(strcat([folder 'FRI_lib']));
 addpath(strcat([folder 'RD']));
 

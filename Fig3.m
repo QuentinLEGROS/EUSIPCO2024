@@ -16,7 +16,7 @@ folder = './';
 addpath(folder);
 addpath(strcat([folder 'tools']));
 addpath(strcat([folder 'synchrosqueezedSTFT']));
-addpath(strcat([folder 'FRI_lib_2']));
+addpath(strcat([folder 'FRI_lib']));
 
 
 % Tfr parameter
@@ -74,7 +74,7 @@ ylim([0 800])
 
 hold on
 for c = 1:Ncomp
-  IF = tf(:,c);
+  IF = tf(:,c)-1;
   h(c) = plot(t,IF/M*Fs_out, cols{c});
   label{c} = sprintf('mode %d', c);
 end
