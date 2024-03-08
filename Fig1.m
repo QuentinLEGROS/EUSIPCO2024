@@ -1,4 +1,4 @@
-clear all
+clear
 close all
 clc
 
@@ -24,7 +24,7 @@ addpath(strcat([folder 'FRI_lib']));
 addpath(strcat([folder 'RD']));
 
 snr_range = [-20 20]; % SNR range to compute
-MCrep = 100;          % number of MC realization (20-30 are sufficient to reproduce the figure behaviour)
+MCrep = 100; %100;          % number of MC realization (20-30 are sufficient to reproduce the figure behaviour)
 
 %% Time-frequency representation parameters
 M       = 500;       %% Number of frequential bin
@@ -68,13 +68,13 @@ n_pad = 50;                                % padding for comparison
 
 
 % Parameter of PB methods
-alpha = 0.5;
-beta = 0.5;
-ds    = 2; % variance of the random walk in the temporal model
+alpha  = 0.5;
+beta   = 0.5;
+ds     = 2; % variance of the random walk in the temporal model
 ifplot =  0; % plot intermediary estimation of each ridge using the proposed approach
 
 % Parameter of recursive FRI
-k=3;                                        % recursive filter order
+k=3; %3;                                        % recursive filter order
 [Fr,a,b] = init_recursif_data(M,L,k);
 
 
@@ -219,9 +219,9 @@ for ind_met =  1:nb_methods
   hold on
  end
  
- h(ind_met) = plot(SNRt, squeeze(L2ErPos_out(:,ind_met)), cols{ind_met});
- xlabel('SNR (dB)', 'FontSize', 14)
- ylabel('RMSE', 'FontSize', 14)
+ h(ind_met) = plot(SNRt, 10*log10(squeeze(L2ErPos_out(:,ind_met))), cols{ind_met});
+ xlabel('SNR [dB]', 'FontSize', 14)
+ ylabel('RMSE [dB]', 'FontSize', 14)
  leg{ind_met} = methods_name{methods_to_use(ind_met)};
 end
 legend(h, leg, 'location', 'NorthWest', 'FontSize', 8)
