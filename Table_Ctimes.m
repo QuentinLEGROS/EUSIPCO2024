@@ -17,6 +17,7 @@ addpath(folder);
 addpath(strcat([folder 'Brevdo']));
 addpath(strcat([folder 'mfiles']));
 addpath(strcat([folder 'FRI_lib']));
+addpath(strcat([folder 'RecursiveSTFT']));
 addpath(strcat([folder 'tools']));
 addpath(strcat([folder 'synchrosqueezedSTFT']));
 addpath(strcat([folder 'PseudoBay']));
@@ -82,9 +83,10 @@ methods_name = {'Brevdo',...
                 'Recursive FRI'
                 };
             
-methods_to_use = [1 2 3 5 6];   % insert here the indices of the methods to compare (names above)
+methods_to_use = 6%[1 2 3 5 6];   % insert here the indices of the methods to compare (names above)
 nb_methods = length(methods_to_use);
 mm = [500 500 1000 2000];
+% ctime = zeros(MCrep,1);
 Ctime = zeros(length(methods_to_use),length(mm));
 
 
@@ -176,12 +178,10 @@ for ind_met = 1:length(methods_to_use)
     Ctime(ind_met,ind_m) = mean(ctime);
     end
 end  %% methods
-Ctime(:,2:end)
-
 
 
 for ind_met = 1:length(methods_to_use)
-    for ind_m = 2:length(mm)
+    for ind_m = 1:length(mm)
         disp(strcat([methods_name(ind_met),', M = ',num2str(mm(ind_m)),' : ',num2str(Ctime(ind_met,ind_m)) ]))
     end
 end

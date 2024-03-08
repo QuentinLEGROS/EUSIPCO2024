@@ -19,6 +19,7 @@ addpath(strcat([folder 'synchrosqueezedSTFT']));
 addpath(strcat([folder 'tools']));
 addpath(strcat([folder 'PseudoBay']));
 addpath(strcat([folder 'Brevdo']));
+addpath(strcat([folder 'RecursiveSTFT']));
 addpath(strcat([folder 'FRI_lib']));
 addpath(strcat([folder 'RD']));
 
@@ -224,8 +225,13 @@ for ind_met =  1:nb_methods
  leg{ind_met} = methods_name{methods_to_use(ind_met)};
 end
 legend(h, leg, 'location', 'NorthWest', 'FontSize', 8)
-
+set(gca, 'YScale', 'log')
 grid
+
+
+
+
+save('FigIF')
 
 
 
